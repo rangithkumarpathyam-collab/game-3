@@ -11,6 +11,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
+  <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
   <style>
     :root {
       --fia-red: #e11d48;
@@ -1105,6 +1106,48 @@
   </div>
 
   <script>
+    // =========================================================================
+    // CRAZYGAMES SDK v3 INTEGRATION
+    // =========================================================================
+    const crazySDK = {
+      isAvailable: false,
+      async init() {
+        if (window.CrazyGames && window.CrazyGames.SDK) {
+          try {
+            await window.CrazyGames.SDK.init();
+            this.isAvailable = true;
+            console.log('[CrazyGames] SDK v3 initialized successfully');
+            if (window.CrazyGames.SDK.game && window.CrazyGames.SDK.game.loadingStop) {
+              window.CrazyGames.SDK.game.loadingStop();
+            }
+          } catch (err) {
+            console.warn('[CrazyGames] Init ignored/failed:', err);
+          }
+        }
+      },
+      gameplayStart() {
+        try {
+          if (this.isAvailable && window.CrazyGames.SDK.game && window.CrazyGames.SDK.game.gameplayStart) {
+            window.CrazyGames.SDK.game.gameplayStart();
+          }
+        } catch (e) {}
+      },
+      gameplayStop() {
+        try {
+          if (this.isAvailable && window.CrazyGames.SDK.game && window.CrazyGames.SDK.game.gameplayStop) {
+            window.CrazyGames.SDK.game.gameplayStop();
+          }
+        } catch (e) {}
+      },
+      happyTime() {
+        try {
+          if (this.isAvailable && window.CrazyGames.SDK.game && window.CrazyGames.SDK.game.happytime) {
+            window.CrazyGames.SDK.game.happytime();
+          }
+        } catch (e) {}
+      }
+    };
+
     // =========================================================================
     // 1. EMBEDDED BLENDER 3D ASSETS (NeonRushTrack.blend1 + RacingCar.blend1)
     // =========================================================================
@@ -4630,6 +4673,7 @@
 
       rebuildAllCarsArray();
       state.raceElapsed = 0;
+      crazySDK.gameplayStart();
       document.getElementById('modal-overlay').classList.add('hidden');
       document.getElementById('finish-modal').classList.add('hidden');
       document.getElementById('btn-resume-race').classList.remove('hidden');
@@ -6031,6 +6075,8 @@
       }).join('');
 
       document.getElementById('finish-modal').classList.remove('hidden');
+      crazySDK.gameplayStop();
+      crazySDK.happyTime();
     }
 
     // =========================================================================
@@ -6729,6 +6775,7 @@
 
     document.getElementById('btn-finish-garage').addEventListener('click', () => {
       document.getElementById('finish-modal').classList.add('hidden');
+      crazySDK.gameplayStop();
       state.phase = 'menu';
       document.getElementById('modal-overlay').classList.remove('hidden');
     });
@@ -7815,6 +7862,7 @@
 
     window.addEventListener('load', () => {
       initSceneAndAssets();
+      crazySDK.init();
     });
   </script>
 </body>
